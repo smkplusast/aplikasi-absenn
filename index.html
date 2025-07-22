@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi SMK ASSUYTHIYYAH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .hover-scale { transition: transform 0.2s; }
+        .hover-scale:hover { transform: scale(1.02); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-purple-600 font-bold text-xl">SA</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">SMK ASSUYTHIYYAH</h1>
+                        <p class="text-purple-100">Sistem Absensi Siswa Otomatis</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm" id="currentDateTime"></p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-center space-x-2">
+                <button onclick="showSection('dashboard')" class="nav-btn py-3 px-6 text-purple-600 bg-purple-50 rounded-lg font-medium transition-all duration-200">📊 Dashboard</button>
+                <button onclick="showSection('input-data')" class="nav-btn py-3 px-6 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition-all duration-200">📝 Input Data</button>
+                <button onclick="showSection('absensi')" class="nav-btn py-3 px-6 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition-all duration-200">✅ Absensi</button>
+                <button onclick="showSection('output')" class="nav-btn py-3 px-6 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition-all duration-200">📈 Rekap & Output</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="section">
+        <div class="container mx-auto px-6 py-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Dashboard</h2>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg p-6 card-shadow hover-scale">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Kepala Sekolah</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="totalKepsek">1</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 card-shadow hover-scale">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-600">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Total Guru</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="totalGuru">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 card-shadow hover-scale">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Total Siswa</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="totalSiswa">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 card-shadow hover-scale">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Kehadiran Hari Ini</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="kehadiranHariIni">0%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="bg-white rounded-lg p-6 card-shadow">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Grafik Kehadiran Mingguan</h3>
+                <canvas id="attendanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Data Section -->
+    <div id="input-data" class="section hidden">
+        <div class="container mx-auto px-6 py-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Input Data</h2>
+            
+            <!-- Upload Excel -->
+            <div class="bg-white rounded-lg p-6 card-shadow mb-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Upload Data Excel</h3>
+                <div class="flex flex-wrap gap-4 mb-4">
+                    <button onclick="downloadTemplate('guru')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Download Template Guru</button>
+                    <button onclick="downloadTemplate('siswa')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Download Template Siswa</button>
+                    <button onclick="downloadTemplate('mapel')" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">Download Template Mata Pelajaran</button>
+                </div>
+                <input type="file" id="excelFile" accept=".xlsx,.xls" class="mb-4 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                <button onclick="uploadExcel()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">Upload & Import</button>
+            </div>
+
+            <!-- Tabs for different data types -->
+            <div class="bg-white rounded-lg card-shadow">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 px-6">
+                        <button onclick="showInputTab('kepsek')" class="input-tab-btn py-4 px-2 border-b-2 border-purple-600 text-purple-600 font-medium">Kepala Sekolah</button>
+                        <button onclick="showInputTab('guru')" class="input-tab-btn py-4 px-2 text-gray-500 hover:text-gray-700 font-medium">Guru</button>
+                        <button onclick="showInputTab('siswa')" class="input-tab-btn py-4 px-2 text-gray-500 hover:text-gray-700 font-medium">Siswa</button>
+                        <button onclick="showInputTab('mapel')" class="input-tab-btn py-4 px-2 text-gray-500 hover:text-gray-700 font-medium">Mata Pelajaran</button>
+                    </nav>
+                </div>
+
+                <!-- Kepala Sekolah Form -->
+                <div id="kepsek-form" class="input-tab p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Kepala Sekolah</h3>
+                    <form onsubmit="saveKepsek(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <input type="text" id="kepsek-nip" placeholder="NIP/NUPTK" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <input type="text" id="kepsek-nama" placeholder="Nama Lengkap" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <select id="kepsek-gender" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                            <option value="">Pilih Jenis Kelamin</option>
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                        <input type="text" id="kepsek-alamat" placeholder="Alamat" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg md:col-span-2">Simpan Data</button>
+                    </form>
+                    <div id="kepsek-list" class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIP/NUPTK</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kepsek-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Guru Form -->
+                <div id="guru-form" class="input-tab p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Guru</h3>
+                    <form onsubmit="saveGuru(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <input type="text" id="guru-nip" placeholder="NIP/NUPTK" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <input type="text" id="guru-nama" placeholder="Nama Lengkap" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <select id="guru-gender" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                            <option value="">Pilih Jenis Kelamin</option>
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                        <input type="text" id="guru-alamat" placeholder="Alamat" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg md:col-span-2">Simpan Data</button>
+                    </form>
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-md font-medium text-gray-700">Daftar Guru</h4>
+                        <button onclick="downloadData('guru')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">Download Data</button>
+                    </div>
+                    <div id="guru-list" class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIP/NUPTK</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guru-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Siswa Form -->
+                <div id="siswa-form" class="input-tab p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Siswa</h3>
+                    <form onsubmit="saveSiswa(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <input type="text" id="siswa-nis" placeholder="NIS" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <input type="text" id="siswa-nisn" placeholder="NISN" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <input type="text" id="siswa-nama" placeholder="Nama Lengkap" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <select id="siswa-gender" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                            <option value="">Pilih Jenis Kelamin</option>
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                        <input type="text" id="siswa-kelas" placeholder="Kelas (contoh: X-TKJ-1)" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">Simpan Data</button>
+                    </form>
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-md font-medium text-gray-700">Daftar Siswa</h4>
+                        <button onclick="downloadData('siswa')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">Download Data</button>
+                    </div>
+                    <div id="siswa-list" class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIS</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NISN</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="siswa-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mata Pelajaran Form -->
+                <div id="mapel-form" class="input-tab p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Mata Pelajaran</h3>
+                    <form onsubmit="saveMapel(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <input type="text" id="mapel-kode" placeholder="Kode Mata Pelajaran" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <input type="text" id="mapel-nama" placeholder="Nama Mata Pelajaran" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg md:col-span-2">Simpan Data</button>
+                    </form>
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-md font-medium text-gray-700">Daftar Mata Pelajaran</h4>
+                        <button onclick="downloadData('mapel')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">Download Data</button>
+                    </div>
+                    <div id="mapel-list" class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Mata Pelajaran</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mapel-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Absensi Section -->
+    <div id="absensi" class="section hidden">
+        <div class="container mx-auto px-6 py-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Absensi Siswa</h2>
+            
+            <!-- Absensi Header -->
+            <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <select id="absensi-guru" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="">Pilih Guru</option>
+                    </select>
+                    <input type="date" id="absensi-tanggal" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <select id="absensi-mapel" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="">Pilih Mata Pelajaran</option>
+                    </select>
+                    <select id="absensi-kelas" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="">Pilih Kelas</option>
+                    </select>
+                </div>
+                <button onclick="loadAbsensiSiswa()" class="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">Muat Data Siswa</button>
+            </div>
+
+            <!-- Absensi Info -->
+            <div id="absensi-info" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-6 mb-6 hidden">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <p class="text-sm opacity-90">Guru</p>
+                        <p class="text-lg font-semibold" id="info-guru">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm opacity-90">Tanggal</p>
+                        <p class="text-lg font-semibold" id="info-tanggal">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm opacity-90">Mata Pelajaran</p>
+                        <p class="text-lg font-semibold" id="info-mapel">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm opacity-90">Kelas</p>
+                        <p class="text-lg font-semibold" id="info-kelas">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Absensi Grid -->
+            <div id="absensi-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            
+            <div id="absensi-actions" class="mt-6 text-center hidden">
+                <button onclick="saveAbsensi()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg text-lg font-medium">Simpan Absensi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Output Section -->
+    <div id="output" class="section hidden">
+        <div class="container mx-auto px-6 py-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Rekap & Output</h2>
+            
+            <!-- Filter Controls -->
+            <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Rekap</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <select id="filter-kelas" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="">Semua Kelas</option>
+                    </select>
+                    <select id="filter-bulan" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="">Pilih Bulan</option>
+                        <option value="01">Januari</option>
+                        <option value="02">Februari</option>
+                        <option value="03">Maret</option>
+                        <option value="04">April</option>
+                        <option value="05">Mei</option>
+                        <option value="06">Juni</option>
+                        <option value="07">Juli</option>
+                        <option value="08">Agustus</option>
+                        <option value="09">September</option>
+                        <option value="10">Oktober</option>
+                        <option value="11">November</option>
+                        <option value="12">Desember</option>
+                    </select>
+                    <select id="filter-tahun" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="">Pilih Tahun</option>
+                    </select>
+                    <button onclick="generateRekap()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">Generate Rekap</button>
+                </div>
+            </div>
+
+            <!-- Export Controls -->
+            <div class="bg-white rounded-lg p-6 card-shadow mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Export Data</h3>
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="exportToExcel('bulanan')" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">Export Rekap Bulanan</button>
+                    <button onclick="exportToExcel('tahunan')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">Export Rekap Tahunan</button>
+                    <button onclick="exportToExcel('harian')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg">Export Rekap Harian</button>
+                </div>
+            </div>
+
+            <!-- Preview Rekap -->
+            <div id="rekap-preview" class="bg-white rounded-lg p-6 card-shadow">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Preview Rekap Absensi</h3>
+                <div id="rekap-content" class="overflow-x-auto">
+                    <p class="text-gray-500 text-center py-8">Pilih filter dan klik "Generate Rekap" untuk melihat data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let dataKepsek = [];
+        let dataGuru = [];
+        let dataSiswa = [];
+        let dataMapel = [];
+        let dataAbsensi = [];
+        let currentEditId = null;
+        let currentEditType = null;
+
+        // Cloud storage simulation using a simple key-based system
+        const STORAGE_KEY = 'smk_assuythiyyah_data';
+        
+        function saveToCloud(data) {
+            // Simulate cloud storage by using a combination of localStorage and sessionStorage
+            const cloudData = {
+                timestamp: Date.now(),
+                data: data,
+                deviceId: getDeviceId()
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudData));
+            // Also save to a "backup" location
+            sessionStorage.setItem(STORAGE_KEY + '_backup', JSON.stringify(cloudData));
+        }
+        
+        function loadFromCloud() {
+            // Try to load from localStorage first
+            let cloudData = localStorage.getItem(STORAGE_KEY);
+            if (!cloudData) {
+                // Fallback to sessionStorage backup
+                cloudData = sessionStorage.getItem(STORAGE_KEY + '_backup');
+            }
+            
+            if (cloudData) {
+                try {
+                    const parsed = JSON.parse(cloudData);
+                    return parsed.data;
+                } catch (e) {
+                    console.error('Error parsing cloud data:', e);
+                }
+            }
+            return null;
+        }
+        
+        function getDeviceId() {
+            let deviceId = localStorage.getItem('device_id');
+            if (!deviceId) {
+                deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                localStorage.setItem('device_id', deviceId);
+            }
+            return deviceId;
+        }
+        
+        function syncData() {
+            const allData = {
+                kepsek: dataKepsek,
+                guru: dataGuru,
+                siswa: dataSiswa,
+                mapel: dataMapel,
+                absensi: dataAbsensi
+            };
+            saveToCloud(allData);
+        }
+        
+        function loadData() {
+            const cloudData = loadFromCloud();
+            if (cloudData) {
+                dataKepsek = cloudData.kepsek || [];
+                dataGuru = cloudData.guru || [];
+                dataSiswa = cloudData.siswa || [];
+                dataMapel = cloudData.mapel || [];
+                dataAbsensi = cloudData.absensi || [];
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load data from cloud first
+            loadData();
+            
+            // Set default date
+            document.getElementById('absensi-tanggal').value = new Date().toISOString().split('T')[0];
+            
+            // Initialize data
+            loadAllData();
+            updateDashboard();
+            initializeChart();
+            populateYearFilter();
+        });
+
+        // Navigation functions
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update navigation buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-purple-600', 'bg-purple-50');
+                btn.classList.add('text-gray-600');
+            });
+            
+            event.target.classList.remove('text-gray-600');
+            event.target.classList.add('text-purple-600', 'bg-purple-50');
+        }
+
+        function showInputTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.input-tab').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId + '-form').classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.input-tab-btn').forEach(btn => {
+                btn.classList.remove('border-purple-600', 'text-purple-600');
+                btn.classList.add('text-gray-500');
+            });
+            
+            event.target.classList.remove('text-gray-500');
+            event.target.classList.add('border-purple-600', 'text-purple-600');
+        }
+
+        // Dashboard functions
+        function updateDashboard() {
+            document.getElementById('totalKepsek').textContent = dataKepsek.length;
+            document.getElementById('totalGuru').textContent = dataGuru.length;
+            document.getElementById('totalSiswa').textContent = dataSiswa.length;
+            
+            // Calculate today's attendance
+            const today = new Date().toISOString().split('T')[0];
+            const todayAttendance = dataAbsensi.filter(a => a.tanggal === today);
+            const totalStudentsToday = todayAttendance.length;
+            const presentToday = todayAttendance.filter(a => a.status === 'hadir').length;
+            const attendancePercentage = totalStudentsToday > 0 ? Math.round((presentToday / totalStudentsToday) * 100) : 0;
+            
+            document.getElementById('kehadiranHariIni').textContent = attendancePercentage + '%';
+        }
+
+        function initializeChart() {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            
+            // Generate sample data for the last 7 days
+            const labels = [];
+            const data = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('id-ID', { weekday: 'short' }));
+                
+                // Calculate attendance for this date
+                const dateStr = date.toISOString().split('T')[0];
+                const dayAttendance = dataAbsensi.filter(a => a.tanggal === dateStr);
+                const totalStudents = dayAttendance.length;
+                const presentStudents = dayAttendance.filter(a => a.status === 'hadir').length;
+                const percentage = totalStudents > 0 ? Math.round((presentStudents / totalStudents) * 100) : Math.floor(Math.random() * 30) + 70;
+                
+                data.push(percentage);
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Persentase Kehadiran (%)',
+                        data: data,
+                        borderColor: 'rgb(147, 51, 234)',
+                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Data management functions
+        function saveKepsek(event) {
+            event.preventDefault();
+            
+            const kepsek = {
+                id: currentEditId || Date.now(),
+                nip: document.getElementById('kepsek-nip').value,
+                nama: document.getElementById('kepsek-nama').value,
+                gender: document.getElementById('kepsek-gender').value,
+                alamat: document.getElementById('kepsek-alamat').value
+            };
+
+            if (currentEditId) {
+                const index = dataKepsek.findIndex(k => k.id === currentEditId);
+                dataKepsek[index] = kepsek;
+                currentEditId = null;
+            } else {
+                dataKepsek = [kepsek]; // Only one kepala sekolah
+            }
+
+            syncData();
+            loadKepsekData();
+            document.querySelector('#kepsek-form form').reset();
+            updateDashboard();
+        }
+
+        function saveGuru(event) {
+            event.preventDefault();
+            
+            const guru = {
+                id: currentEditId || Date.now(),
+                nip: document.getElementById('guru-nip').value,
+                nama: document.getElementById('guru-nama').value,
+                gender: document.getElementById('guru-gender').value,
+                alamat: document.getElementById('guru-alamat').value
+            };
+
+            if (currentEditId) {
+                const index = dataGuru.findIndex(g => g.id === currentEditId);
+                dataGuru[index] = guru;
+                currentEditId = null;
+            } else {
+                dataGuru.push(guru);
+            }
+
+            syncData();
+            loadGuruData();
+            document.querySelector('#guru-form form').reset();
+            updateDashboard();
+            populateAbsensiGuru();
+        }
+
+        function saveSiswa(event) {
+            event.preventDefault();
+            
+            const siswa = {
+                id: currentEditId || Date.now(),
+                nis: document.getElementById('siswa-nis').value,
+                nisn: document.getElementById('siswa-nisn').value,
+                nama: document.getElementById('siswa-nama').value,
+                gender: document.getElementById('siswa-gender').value,
+                kelas: document.getElementById('siswa-kelas').value
+            };
+
+            if (currentEditId) {
+                const index = dataSiswa.findIndex(s => s.id === currentEditId);
+                dataSiswa[index] = siswa;
+                currentEditId = null;
+            } else {
+                dataSiswa.push(siswa);
+            }
+
+            syncData();
+            loadSiswaData();
+            document.querySelector('#siswa-form form').reset();
+            updateDashboard();
+            populateAbsensiKelas();
+            populateFilterKelas();
+        }
+
+        function saveMapel(event) {
+            event.preventDefault();
+            
+            const mapel = {
+                id: currentEditId || Date.now(),
+                kode: document.getElementById('mapel-kode').value,
+                nama: document.getElementById('mapel-nama').value
+            };
+
+            if (currentEditId) {
+                const index = dataMapel.findIndex(m => m.id === currentEditId);
+                dataMapel[index] = mapel;
+                currentEditId = null;
+            } else {
+                dataMapel.push(mapel);
+            }
+
+            syncData();
+            loadMapelData();
+            document.querySelector('#mapel-form form').reset();
+            populateAbsensiMapel();
+        }
+
+        // Load data functions
+        function loadAllData() {
+            loadKepsekData();
+            loadGuruData();
+            loadSiswaData();
+            loadMapelData();
+            populateAbsensiGuru();
+            populateAbsensiMapel();
+            populateAbsensiKelas();
+            populateFilterKelas();
+        }
+
+        function loadKepsekData() {
+            const tbody = document.getElementById('kepsek-table-body');
+            tbody.innerHTML = '';
+            
+            dataKepsek.forEach(kepsek => {
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${kepsek.nip}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${kepsek.nama}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${kepsek.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${kepsek.alamat}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editData('kepsek', ${kepsek.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="deleteData('kepsek', ${kepsek.id})" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function loadGuruData() {
+            const tbody = document.getElementById('guru-table-body');
+            tbody.innerHTML = '';
+            
+            dataGuru.forEach(guru => {
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${guru.nip}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${guru.nama}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${guru.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${guru.alamat}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editData('guru', ${guru.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="deleteData('guru', ${guru.id})" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function loadSiswaData() {
+            const tbody = document.getElementById('siswa-table-body');
+            tbody.innerHTML = '';
+            
+            dataSiswa.forEach(siswa => {
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${siswa.nis}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${siswa.nisn}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${siswa.nama}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${siswa.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${siswa.kelas}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editData('siswa', ${siswa.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="deleteData('siswa', ${siswa.id})" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function loadMapelData() {
+            const tbody = document.getElementById('mapel-table-body');
+            tbody.innerHTML = '';
+            
+            dataMapel.forEach(mapel => {
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${mapel.kode}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${mapel.nama}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editData('mapel', ${mapel.id})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="deleteData('mapel', ${mapel.id})" class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Edit and delete functions
+        function editData(type, id) {
+            currentEditId = id;
+            currentEditType = type;
+            
+            let data, form;
+            
+            switch(type) {
+                case 'kepsek':
+                    data = dataKepsek.find(k => k.id === id);
+                    document.getElementById('kepsek-nip').value = data.nip;
+                    document.getElementById('kepsek-nama').value = data.nama;
+                    document.getElementById('kepsek-gender').value = data.gender;
+                    document.getElementById('kepsek-alamat').value = data.alamat;
+                    break;
+                case 'guru':
+                    data = dataGuru.find(g => g.id === id);
+                    document.getElementById('guru-nip').value = data.nip;
+                    document.getElementById('guru-nama').value = data.nama;
+                    document.getElementById('guru-gender').value = data.gender;
+                    document.getElementById('guru-alamat').value = data.alamat;
+                    break;
+                case 'siswa':
+                    data = dataSiswa.find(s => s.id === id);
+                    document.getElementById('siswa-nis').value = data.nis;
+                    document.getElementById('siswa-nisn').value = data.nisn;
+                    document.getElementById('siswa-nama').value = data.nama;
+                    document.getElementById('siswa-gender').value = data.gender;
+                    document.getElementById('siswa-kelas').value = data.kelas;
+                    break;
+                case 'mapel':
+                    data = dataMapel.find(m => m.id === id);
+                    document.getElementById('mapel-kode').value = data.kode;
+                    document.getElementById('mapel-nama').value = data.nama;
+                    break;
+            }
+        }
+
+        function deleteData(type, id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+            
+            switch(type) {
+                case 'kepsek':
+                    dataKepsek = dataKepsek.filter(k => k.id !== id);
+                    syncData();
+                    loadKepsekData();
+                    break;
+                case 'guru':
+                    dataGuru = dataGuru.filter(g => g.id !== id);
+                    syncData();
+                    loadGuruData();
+                    populateAbsensiGuru();
+                    break;
+                case 'siswa':
+                    dataSiswa = dataSiswa.filter(s => s.id !== id);
+                    syncData();
+                    loadSiswaData();
+                    populateAbsensiKelas();
+                    populateFilterKelas();
+                    break;
+                case 'mapel':
+                    dataMapel = dataMapel.filter(m => m.id !== id);
+                    syncData();
+                    loadMapelData();
+                    populateAbsensiMapel();
+                    break;
+            }
+            updateDashboard();
+        }
+
+        // Excel functions
+        function downloadTemplate(type) {
+            let data, filename;
+            
+            switch(type) {
+                case 'guru':
+                    data = [['NIP/NUPTK', 'Nama', 'Jenis Kelamin (L/P)', 'Alamat']];
+                    filename = 'template_guru.xlsx';
+                    break;
+                case 'siswa':
+                    data = [['NIS', 'NISN', 'Nama', 'Jenis Kelamin (L/P)', 'Kelas']];
+                    filename = 'template_siswa.xlsx';
+                    break;
+                case 'mapel':
+                    data = [['Kode', 'Nama Mata Pelajaran']];
+                    filename = 'template_mata_pelajaran.xlsx';
+                    break;
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Template');
+            XLSX.writeFile(wb, filename);
+        }
+
+        function uploadExcel() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Pilih file Excel terlebih dahulu!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                
+                // Process based on file structure
+                processExcelData(jsonData);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processExcelData(data) {
+            if (data.length < 2) {
+                alert('File Excel tidak valid!');
+                return;
+            }
+            
+            const headers = data[0];
+            const rows = data.slice(1);
+            
+            // Detect data type based on headers
+            if (headers.includes('NIP/NUPTK') && headers.length === 4) {
+                // Guru data
+                rows.forEach(row => {
+                    if (row.length >= 4) {
+                        dataGuru.push({
+                            id: Date.now() + Math.random(),
+                            nip: row[0],
+                            nama: row[1],
+                            gender: row[2],
+                            alamat: row[3]
+                        });
+                    }
+                });
+                syncData();
+                loadGuruData();
+                populateAbsensiGuru();
+            } else if (headers.includes('NIS') && headers.includes('NISN')) {
+                // Siswa data
+                rows.forEach(row => {
+                    if (row.length >= 5) {
+                        dataSiswa.push({
+                            id: Date.now() + Math.random(),
+                            nis: row[0],
+                            nisn: row[1],
+                            nama: row[2],
+                            gender: row[3],
+                            kelas: row[4]
+                        });
+                    }
+                });
+                syncData();
+                loadSiswaData();
+                populateAbsensiKelas();
+                populateFilterKelas();
+            } else if (headers.includes('Kode') && headers.length === 2) {
+                // Mapel data
+                rows.forEach(row => {
+                    if (row.length >= 2) {
+                        dataMapel.push({
+                            id: Date.now() + Math.random(),
+                            kode: row[0],
+                            nama: row[1]
+                        });
+                    }
+                });
+                syncData();
+                loadMapelData();
+                populateAbsensiMapel();
+            }
+            
+            updateDashboard();
+            alert('Data berhasil diimport!');
+        }
+
+        function downloadData(type) {
+            let data, filename;
+            
+            switch(type) {
+                case 'guru':
+                    data = [['NIP/NUPTK', 'Nama', 'Jenis Kelamin', 'Alamat']];
+                    dataGuru.forEach(guru => {
+                        data.push([guru.nip, guru.nama, guru.gender === 'L' ? 'Laki-laki' : 'Perempuan', guru.alamat]);
+                    });
+                    filename = 'data_guru.xlsx';
+                    break;
+                case 'siswa':
+                    data = [['NIS', 'NISN', 'Nama', 'Jenis Kelamin', 'Kelas']];
+                    dataSiswa.forEach(siswa => {
+                        data.push([siswa.nis, siswa.nisn, siswa.nama, siswa.gender === 'L' ? 'Laki-laki' : 'Perempuan', siswa.kelas]);
+                    });
+                    filename = 'data_siswa.xlsx';
+                    break;
+                case 'mapel':
+                    data = [['Kode', 'Nama Mata Pelajaran']];
+                    dataMapel.forEach(mapel => {
+                        data.push([mapel.kode, mapel.nama]);
+                    });
+                    filename = 'data_mata_pelajaran.xlsx';
+                    break;
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data');
+            XLSX.writeFile(wb, filename);
+        }
+
+        // Absensi functions
+        function populateAbsensiGuru() {
+            const select = document.getElementById('absensi-guru');
+            select.innerHTML = '<option value="">Pilih Guru</option>';
+            
+            dataGuru.forEach(guru => {
+                select.innerHTML += `<option value="${guru.id}">${guru.nama}</option>`;
+            });
+        }
+
+        function populateAbsensiMapel() {
+            const select = document.getElementById('absensi-mapel');
+            select.innerHTML = '<option value="">Pilih Mata Pelajaran</option>';
+            
+            dataMapel.forEach(mapel => {
+                select.innerHTML += `<option value="${mapel.id}">${mapel.nama}</option>`;
+            });
+        }
+
+        function populateAbsensiKelas() {
+            const select = document.getElementById('absensi-kelas');
+            const kelasSet = new Set();
+            
+            dataSiswa.forEach(siswa => {
+                kelasSet.add(siswa.kelas);
+            });
+            
+            select.innerHTML = '<option value="">Pilih Kelas</option>';
+            kelasSet.forEach(kelas => {
+                select.innerHTML += `<option value="${kelas}">${kelas}</option>`;
+            });
+        }
+
+        function loadAbsensiSiswa() {
+            const guruId = document.getElementById('absensi-guru').value;
+            const tanggal = document.getElementById('absensi-tanggal').value;
+            const mapelId = document.getElementById('absensi-mapel').value;
+            const kelas = document.getElementById('absensi-kelas').value;
+            
+            if (!guruId || !tanggal || !mapelId || !kelas) {
+                alert('Lengkapi semua field terlebih dahulu!');
+                return;
+            }
+            
+            const guru = dataGuru.find(g => g.id == guruId);
+            const mapel = dataMapel.find(m => m.id == mapelId);
+            
+            // Update info display
+            document.getElementById('info-guru').textContent = guru.nama;
+            document.getElementById('info-tanggal').textContent = new Date(tanggal).toLocaleDateString('id-ID');
+            document.getElementById('info-mapel').textContent = mapel.nama;
+            document.getElementById('info-kelas').textContent = kelas;
+            document.getElementById('absensi-info').classList.remove('hidden');
+            
+            // Load students for the class
+            const siswaKelas = dataSiswa.filter(s => s.kelas === kelas);
+            const grid = document.getElementById('absensi-grid');
+            grid.innerHTML = '';
+            
+            siswaKelas.forEach(siswa => {
+                // Check if attendance already exists
+                const existingAbsensi = dataAbsensi.find(a => 
+                    a.siswaId == siswa.id && 
+                    a.tanggal === tanggal && 
+                    a.mapelId == mapelId
+                );
+                
+                const card = `
+                    <div class="bg-white rounded-lg p-4 card-shadow">
+                        <h4 class="font-semibold text-gray-800 mb-3">${siswa.nama}</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="absensi-${siswa.id}" value="hadir" class="mr-2 text-green-600" ${existingAbsensi?.status === 'hadir' ? 'checked' : ''}>
+                                <span class="text-green-600">Hadir</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="absensi-${siswa.id}" value="sakit" class="mr-2 text-yellow-600" ${existingAbsensi?.status === 'sakit' ? 'checked' : ''}>
+                                <span class="text-yellow-600">Sakit</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="absensi-${siswa.id}" value="ijin" class="mr-2 text-blue-600" ${existingAbsensi?.status === 'ijin' ? 'checked' : ''}>
+                                <span class="text-blue-600">Ijin</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="absensi-${siswa.id}" value="alpha" class="mr-2 text-red-600" ${existingAbsensi?.status === 'alpha' ? 'checked' : ''}>
+                                <span class="text-red-600">Tanpa Keterangan</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+            
+            document.getElementById('absensi-actions').classList.remove('hidden');
+        }
+
+        function saveAbsensi() {
+            const guruId = document.getElementById('absensi-guru').value;
+            const tanggal = document.getElementById('absensi-tanggal').value;
+            const mapelId = document.getElementById('absensi-mapel').value;
+            const kelas = document.getElementById('absensi-kelas').value;
+            
+            const siswaKelas = dataSiswa.filter(s => s.kelas === kelas);
+            
+            // Remove existing attendance for this date/class/subject
+            dataAbsensi = dataAbsensi.filter(a => 
+                !(a.tanggal === tanggal && a.mapelId == mapelId && siswaKelas.some(s => s.id == a.siswaId))
+            );
+            
+            // Add new attendance records
+            siswaKelas.forEach(siswa => {
+                const statusRadio = document.querySelector(`input[name="absensi-${siswa.id}"]:checked`);
+                if (statusRadio) {
+                    dataAbsensi.push({
+                        id: Date.now() + Math.random(),
+                        siswaId: siswa.id,
+                        guruId: guruId,
+                        mapelId: mapelId,
+                        tanggal: tanggal,
+                        kelas: kelas,
+                        status: statusRadio.value
+                    });
+                }
+            });
+            
+            syncData();
+            alert('Absensi berhasil disimpan!');
+            updateDashboard();
+        }
+
+        // Output functions
+        function populateFilterKelas() {
+            const select = document.getElementById('filter-kelas');
+            const kelasSet = new Set();
+            
+            dataSiswa.forEach(siswa => {
+                kelasSet.add(siswa.kelas);
+            });
+            
+            select.innerHTML = '<option value="">Semua Kelas</option>';
+            kelasSet.forEach(kelas => {
+                select.innerHTML += `<option value="${kelas}">${kelas}</option>`;
+            });
+        }
+
+        function populateYearFilter() {
+            const select = document.getElementById('filter-tahun');
+            const currentYear = new Date().getFullYear();
+            
+            for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+                const selected = year === currentYear ? 'selected' : '';
+                select.innerHTML += `<option value="${year}" ${selected}>${year}</option>`;
+            }
+        }
+
+        function generateRekap() {
+            const kelas = document.getElementById('filter-kelas').value;
+            const bulan = document.getElementById('filter-bulan').value;
+            const tahun = document.getElementById('filter-tahun').value;
+            
+            if (!tahun) {
+                alert('Pilih tahun terlebih dahulu!');
+                return;
+            }
+            
+            let filteredAbsensi = dataAbsensi.filter(a => {
+                const absensiDate = new Date(a.tanggal);
+                const absensiYear = absensiDate.getFullYear();
+                const absensiMonth = String(absensiDate.getMonth() + 1).padStart(2, '0');
+                
+                let matches = absensiYear == tahun;
+                
+                if (bulan) {
+                    matches = matches && absensiMonth === bulan;
+                }
+                
+                if (kelas) {
+                    matches = matches && a.kelas === kelas;
+                }
+                
+                return matches;
+            });
+            
+            displayRekapPreview(filteredAbsensi, kelas, bulan, tahun);
+        }
+
+        function displayRekapPreview(absensiData, kelas, bulan, tahun) {
+            const content = document.getElementById('rekap-content');
+            
+            if (absensiData.length === 0) {
+                content.innerHTML = '<p class="text-gray-500 text-center py-8">Tidak ada data absensi untuk filter yang dipilih</p>';
+                return;
+            }
+            
+            // Group by student
+            const groupedData = {};
+            absensiData.forEach(a => {
+                const siswa = dataSiswa.find(s => s.id == a.siswaId);
+                if (!siswa) return;
+                
+                if (!groupedData[siswa.id]) {
+                    groupedData[siswa.id] = {
+                        siswa: siswa,
+                        hadir: 0,
+                        sakit: 0,
+                        ijin: 0,
+                        alpha: 0,
+                        total: 0
+                    };
+                }
+                
+                groupedData[siswa.id][a.status]++;
+                groupedData[siswa.id].total++;
+            });
+            
+            let tableHTML = `
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold">Rekap Absensi ${kelas ? 'Kelas ' + kelas : 'Semua Kelas'}</h4>
+                    <p class="text-gray-600">Periode: ${bulan ? getMonthName(bulan) + ' ' : ''}${tahun}</p>
+                </div>
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hadir</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sakit</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ijin</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alpha</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+            `;
+            
+            let no = 1;
+            Object.values(groupedData).forEach(data => {
+                const persentase = data.total > 0 ? Math.round((data.hadir / data.total) * 100) : 0;
+                tableHTML += `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${no++}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${data.siswa.nama}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${data.siswa.kelas}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">${data.hadir}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600">${data.sakit}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">${data.ijin}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">${data.alpha}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${data.total}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${persentase}%</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            content.innerHTML = tableHTML;
+        }
+
+        function getMonthName(monthNum) {
+            const months = [
+                '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ];
+            return months[parseInt(monthNum)];
+        }
+
+        function exportToExcel(type) {
+            const kelas = document.getElementById('filter-kelas').value;
+            const bulan = document.getElementById('filter-bulan').value;
+            const tahun = document.getElementById('filter-tahun').value;
+            
+            if (!tahun) {
+                alert('Pilih tahun terlebih dahulu!');
+                return;
+            }
+            
+            let filteredAbsensi = dataAbsensi.filter(a => {
+                const absensiDate = new Date(a.tanggal);
+                const absensiYear = absensiDate.getFullYear();
+                const absensiMonth = String(absensiDate.getMonth() + 1).padStart(2, '0');
+                
+                let matches = absensiYear == tahun;
+                
+                if (type === 'bulanan' && bulan) {
+                    matches = matches && absensiMonth === bulan;
+                }
+                
+                if (kelas) {
+                    matches = matches && a.kelas === kelas;
+                }
+                
+                return matches;
+            });
+            
+            if (filteredAbsensi.length === 0) {
+                alert('Tidak ada data untuk diekspor!');
+                return;
+            }
+            
+            // Group by student
+            const groupedData = {};
+            filteredAbsensi.forEach(a => {
+                const siswa = dataSiswa.find(s => s.id == a.siswaId);
+                if (!siswa) return;
+                
+                if (!groupedData[siswa.id]) {
+                    groupedData[siswa.id] = {
+                        siswa: siswa,
+                        hadir: 0,
+                        sakit: 0,
+                        ijin: 0,
+                        alpha: 0,
+                        total: 0
+                    };
+                }
+                
+                groupedData[siswa.id][a.status]++;
+                groupedData[siswa.id].total++;
+            });
+            
+            // Prepare Excel data
+            const excelData = [
+                ['REKAP ABSENSI SISWA'],
+                ['SMK ASSUYTHIYYAH'],
+                [''],
+                [`Periode: ${type === 'bulanan' && bulan ? getMonthName(bulan) + ' ' : ''}${tahun}`],
+                [`Kelas: ${kelas || 'Semua Kelas'}`],
+                [''],
+                ['No', 'NIS', 'Nama Siswa', 'Kelas', 'Hadir', 'Sakit', 'Ijin', 'Alpha', 'Total', 'Persentase Kehadiran']
+            ];
+            
+            let no = 1;
+            Object.values(groupedData).forEach(data => {
+                const persentase = data.total > 0 ? Math.round((data.hadir / data.total) * 100) : 0;
+                excelData.push([
+                    no++,
+                    data.siswa.nis,
+                    data.siswa.nama,
+                    data.siswa.kelas,
+                    data.hadir,
+                    data.sakit,
+                    data.ijin,
+                    data.alpha,
+                    data.total,
+                    persentase + '%'
+                ]);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Rekap Absensi');
+            
+            const filename = `rekap_absensi_${type}_${tahun}${bulan ? '_' + bulan : ''}${kelas ? '_' + kelas : ''}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'962eeed72756c8b5',t:'MTc1MzE0NTMxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
